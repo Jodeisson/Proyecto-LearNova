@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Cursos | LearNova</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <!-- Barra de Navegación -->
+    <header>
+        <div class="logo-container">
+            <img src="assets/img/Logo-LearNova.png" alt="LearNova Logo" class="logo-img" onerror="this.style.display='none'">
+            <div class="logo">Lear<span>Nova</span></div>
+        </div>
+        <nav>
+            <a href="index.html">Inicio</a>
+            <a href="catalog.html" class="active-link">Cursos</a>
+            <a href="contact.html">Contacto</a>
+            <a href="admin/login.html" class="btn-admin">Admin</a>
+        </nav>
+    </header>
+
+    <main class="catalog-container">
+        <!-- Encabezado y Acción Principal -->
+        <div class="catalog-header">
+            <div>
+                <h1>Explora el conocimiento libre</h1>
+                <p>Elige un curso creado por la comunidad o comparte lo que sabes.</p>
+            </div>
+            <button id="btn-open-modal" class="btn-primary">+ Subir mi curso</button>
+        </div>
+
+        <!-- Barra de Búsqueda y Filtros -->
+        <div class="filter-bar">
+            <input type="text" id="search-input" placeholder="Buscar curso por título o tema...">
+            <select id="category-filter">
+                <option value="all">Todas las categorías</option>
+                <option value="Tecnología">Tecnología y Código</option>
+                <option value="Diseño">Diseño y Creatividad</option>
+                <option value="Negocios">Emprendimiento y Negocios</option>
+                <option value="Idiomas">Idiomas</option>
+            </select>
+        </div>
+
+        <!-- Cuadrícula de Cursos -->
+        <div id="courses-grid" class="courses-grid"></div>
+    </main>
+
+    <!-- Modal para Subir un Nuevo Curso -->
+    <div id="course-modal" class="modal hidden">
+        <div class="modal-content">
+            <span id="btn-close-modal" class="close-btn">&times;</span>
+            <h2>Publicar nuevo curso</h2>
+            <p class="modal-subtitle">Comparte tu conocimiento sin horarios ni restricciones.</p>
+            <form id="new-course-form">
+                <div class="form-group">
+                    <label for="course-title">Título del curso</label>
+                    <input type="text" id="course-title" required placeholder="Ej. Introducción a Python desde cero">
+                </div>
+                <div class="form-group">
+                    <label for="course-author">Tu nombre / Creador</label>
+                    <input type="text" id="course-author" required placeholder="Ej. Laura Gómez">
+                </div>
+                <div class="form-group">
+                    <label for="course-category">Categoría</label>
+                    <select id="course-category" required>
+                        <option value="Tecnología">Tecnología y Código</option>
+                        <option value="Diseño">Diseño y Creatividad</option>
+                        <option value="Negocios">Emprendimiento y Negocios</option>
+                        <option value="Idiomas">Idiomas</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="course-desc">Descripción breve</label>
+                    <textarea id="course-desc" rows="3" required placeholder="¿Qué aprenderán los estudiantes?"></textarea>
+                </div>
+                <button type="submit" class="btn-primary full-width">Publicar Curso</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pie de página -->
+    <footer>
+        <p>&copy; 2026 LearNova. Proyecto Final Avanzado.</p>
+    </footer>
+
+    <script src="assets/js/catalog.js"></script>
+</body>
+</html>
