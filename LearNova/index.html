@@ -9,7 +9,11 @@
 <body>
     <!-- Barra de Navegación -->
     <header>
-        <div class="logo">Lear<span>Nova</span></div>
+        <div class="logo-container">
+            <!-- Coloca tu logo en assets/img/logo.png o usa texto como respaldo -->
+            <img src="assets/img/Logo-LearNova.png" alt="LearNova Logo" class="logo-img" onerror="this.style.display='none'">
+            <div class="logo">Lear<span>Nova</span></div>
+        </div>
         <nav>
             <a href="index.html">Inicio</a>
             <a href="catalog.html">Cursos</a>
@@ -18,14 +22,27 @@
         </nav>
     </header>
 
-    <!-- Sección Principal (Hero) -->
+    <!-- Sección Principal (Hero con imágenes de fondo rotativas) -->
     <main>
         <section class="hero">
-            <h1>Tu ritmo, tu conocimiento, tu futuro</h1>
-            <p>Una plataforma abierta donde tú pones la rutina. Explora cursos creados por la comunidad o comparte tu propio saber sin horarios ni reglas.</p>
-            <div class="hero-buttons">
-                <a href="catalog.html" class="btn-primary">Explorar Cursos</a>
-                <a href="#ia-section" class="btn-secondary">Conoce nuestra IA</a>
+            <!-- Carrusel de imágenes de fondo -->
+            <div class="hero-slider">
+                <div class="slide active" style="background-image: url('assets/img/Sección\ de\ Características.jpg');"></div>
+                <div class="slide" style="background-image: url('assets/img/Sección\ de\ Características-2.jpg');"></div>
+                <div class="slide" style="background-image: url('assets/img/Sección\ de\ Características-3.jpg');"></div>
+                <div class="slide" style="background-image: url('assets/img/Sección\ de\ Características-4.jpg');"></div>
+            </div>
+            <!-- Capa oscura semitransparente para que el texto resalte sobre las fotos -->
+            <div class="hero-overlay"></div>
+
+            <!-- Contenido de texto -->
+            <div class="hero-content">
+                <h1>Tu ritmo, tu conocimiento, tu futuro</h1>
+                <p>Una plataforma abierta donde tú pones la rutina. Explora cursos creados por la comunidad o comparte tu propio saber sin horarios ni reglas.</p>
+                <div class="hero-buttons">
+                    <a href="catalog.html" class="btn-primary">Explorar Cursos</a>
+                    <a href="#ia-section" class="btn-secondary">Conoce nuestra IA</a>
+                </div>
             </div>
         </section>
 
@@ -53,5 +70,20 @@
     <footer>
         <p>&copy; 2026 LearNova. Proyecto Final Avanzado.</p>
     </footer>
+
+    <!-- La transición automática de las 4 imágenes -->
+    <script>
+        const slides = document.querySelectorAll('.hero-slider .slide');
+        let currentSlide = 0;
+
+        function nextSlide() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+
+        // Cambia de imagen cada 5 segundos
+        setInterval(nextSlide, 5000);
+    </script>
 </body>
 </html>
