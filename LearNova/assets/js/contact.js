@@ -3,22 +3,25 @@ const formStatus = document.getElementById('form-status');
 
 form.addEventListener('submit', function(e) {
     e.preventDefault();
-    
     const formData = new FormData(form);
 
-    fetch('/', {
+    fetch(window.location.pathname, {
         method: 'POST',
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams(formData).toString()
     })
-    .then(() => {
-        formStatus.textContent = "¡Gracias por tu mensaje! Nos pondremos en contacto contigo pronto.";
-        formStatus.className = "form-status success";
-        formStatus.classList.remove('hidden');
-        form.reset();
+    .then((response) => {
+        if (response.ok) {
+            formStatus.textContent = "¡Gracias por tu mensaje! Nos pondremos en contacto contigo pronto.";
+            formStatus.className = "form-status success";
+            formStatus.classList.remove('hidden');
+            form.reset();
+        } else {
+            throw new Error('Error en la respuesta');
+        }
     })
-    .catch((error) => {
-        formStatus.textContent = "Lo sentimos, ocurrió un error al enviar. Por favor intenta de nuevo.";
+    .catch(() => {
+        formStatus.textContent = "Lo sentimos, ocurrió un error al enviar.";
         formStatus.className = "form-status error";
         formStatus.classList.remove('hidden');
     });
