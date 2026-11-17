@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración | LearNova</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <!-- Barra de Navegación del Panel -->
+    <header>
+        <div class="logo">Lear<span>Nova</span> <span style="font-size: 0.9rem; color: #64748B; font-weight: normal;">| Admin</span></div>
+        <nav>
+            <span id="admin-user-display" style="font-weight: 600; color: #2563EB;">Admin</span>
+            <button id="btn-logout" class="btn-admin" style="background-color: #FEE2E2; color: #991B1B; border-color: #FCA5A5; cursor: pointer;">Cerrar Sesión</button>
+        </nav>
+    </header>
+
+    <main class="catalog-container">
+        <div class="catalog-header">
+            <div>
+                <h1>Gestión de Cursos</h1>
+                <p>Administra, modera o elimina los cursos publicados por la comunidad.</p>
+            </div>
+        </div>
+
+        <!-- Tabla / Lista de gestión -->
+        <div class="admin-table-container">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Título del Curso</th>
+                        <th>Creador</th>
+                        <th>Categoría</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-courses-tbody">
+                    <!-- Los cursos se cargan dinámicamente con JS -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 LearNova. Panel de Control Seguro.</p>
+    </footer>
+
+    <script src="../assets/js/panel.js"></script>
+</body>
+</html>
