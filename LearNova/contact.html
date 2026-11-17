@@ -10,7 +10,7 @@
     <!-- Barra de Navegación -->
     <header>
         <div class="logo-container">
-            <img src="assets/img/logo.png" alt="LearNova Logo" class="logo-img" onerror="this.style.display='none'">
+            <img src="assets/img/Logo-LearNova.png" alt="LearNova Logo" class="logo-img" onerror="this.style.display='none'">
             <div class="logo">Lear<span>Nova</span></div>
         </div>
         <nav>
@@ -49,8 +49,7 @@
             </div>
 
             <!-- Formulario Real -->
-            <!-- NOTA: Para que funcione en internet, puedes cambiar la URL de action por tu propio ID de Formspree (ej. https://formspree.io/f/tuid) -->
-            <form id="contact-form" class="contact-form" action="https://formspree.io/f/tu-formulario-id" method="POST">
+            <form id="contact-form" class="contact-form" name="contacto-learnova" method="POST" data-netlify="true">
                 <div class="form-group">
                     <label for="name">Tu Nombre</label>
                     <input type="text" id="name" name="name" required placeholder="Ej. Juan Pérez">
