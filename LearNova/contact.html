@@ -48,8 +48,11 @@
                 </div>
             </div>
 
-            <!-- Formulario Real -->
-            <form id="contact-form" class="contact-form" name="contacto-learnova" method="POST" data-netlify="true">
+                        <!-- Formulario Real con Netlify Forms -->
+            <form id="contact-form" class="contact-form" name="contacto" method="POST" data-netlify="true">
+                <!-- Campo oculto requerido por Netlify para reconocimiento de formularios -->
+                <input type="hidden" name="form-name" value="contacto">
+
                 <div class="form-group">
                     <label for="name">Tu Nombre</label>
                     <input type="text" id="name" name="name" required placeholder="Ej. Juan Pérez">
