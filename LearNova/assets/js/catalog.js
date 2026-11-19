@@ -1,3 +1,5 @@
+const API_URL = "/.netlify/functions/courses";
+
 const defaultCourses = [
     {
         id: 1,
@@ -29,197 +31,165 @@ const defaultCourses = [
     }
 ];
 
-// Cargar cursos desde localStorage o usar los predeterminados
-let courses = JSON.parse(localStorage.getItem('learnova_courses')) || defaultCourses;
+let courses = JSON.parse(localStorage.getItem("learnova_courses")) || [...defaultCourses];
 
-const coursesGrid = document.getElementById('courses-grid');
-const searchInput = document.getElementById('search-input');
-const categoryFilter = document.getElementById('category-filter');
+const coursesGrid = document.getElementById("courses-grid") || document.getElementById("courses-container");
+const searchInput = document.getElementById("search-input");
+const categoryFilter = document.getElementById("category-filter");
+
+const modal = document.getElementById("course-modal");
+const openModalBtn = document.getElementById("btn-open-modal");
+const closeModalBtn = document.getElementById("btn-close-modal");
+const newCourseForm = document.getElementById("new-course-form") || document.getElementById("add-course-form");
+
+function escapeHtml(text = "") {
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+// Cargar cursos desde MongoDB Atlas vía Netlify Function
+async function fetchCourses() {
+    if (!coursesGrid) return;
+    coursesGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #64748B;">Cargando cursos...</p>`;
+
+    try {
+        const response = await fetch(API_URL);
+        if (!response.ok) throw new Error("No se pudieron cargar los cursos desde el servidor");
+
+        const data = await response.json();
+        courses = Array.isArray(data) ? data : [];
+        localStorage.setItem("learnova_courses", JSON.stringify(courses));
+        filterCourses();
+    } catch (error) {
+        console.warn("Cargando cursos locales:", error);
+        courses = JSON.parse(localStorage.getItem("learnova_courses")) || [...defaultCourses];
+        filterCourses();
+    }
+}
 
 // Renderizar tarjetas en pantalla
 function renderCourses(list) {
-    coursesGrid.innerHTML = '';
+    if (!coursesGrid) return;
+    coursesGrid.innerHTML = "";
 
     if (list.length === 0) {
         coursesGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #64748B;">No se encontraron cursos con esos criterios.</p>';
         return;
     }
 
-    list.forEach(course => {
-        const card = document.createElement('div');
-        card.className = 'course-card';
+    list.forEach((course) => {
+        const safeTitle = escapeHtml(course.title || "");
+        const safeAuthor = escapeHtml(course.author || "");
+        const safeCategory = escapeHtml(course.category || "");
+        const safeDesc = escapeHtml(course.description || "");
+
+        const card = document.createElement("div");
+        card.className = "course-card";
         card.innerHTML = `
             <div>
-                <span class="badge">${course.category}</span>
-                <h3>${course.title}</h3>
-                <p>${course.description}</p>
+                <span class="badge">${safeCategory}</span>
+                <h3>${safeTitle}</h3>
+                <p>${safeDesc}</p>
             </div>
             <div class="course-footer">
-                <span>Por: <strong>${course.author}</strong></span>
-                <button class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border: none; cursor: pointer;" onclick="alert('Abriendo lecciones de: ${course.title}')">Entrar</button>
+                <span>Por: <strong>${safeAuthor}</strong></span>
+                <button class="btn-primary btn-enter-course" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border: none; cursor: pointer;">Entrar</button>
             </div>
         `;
+
+        card.querySelector(".btn-enter-course").addEventListener("click", () => {
+            alert(`Abriendo lecciones de: ${course.title}`);
+        });
+
         coursesGrid.appendChild(card);
     });
 }
 
 // Filtrar por texto y categoría
 function filterCourses() {
-    const searchTerm = searchInput.value.toLowerCase();
-    const selectedCategory = categoryFilter.value;
+    const searchTerm = (searchInput?.value || "").toLowerCase().trim();
+    const selectedCategory = categoryFilter?.value || "all";
 
-    const filtered = courses.filter(course => {
-        const matchesText = course.title.toLowerCase().includes(searchTerm) || 
-                            course.description.toLowerCase().includes(searchTerm);
-        const matchesCategory = selectedCategory === 'all' || course.category === selectedCategory;
+    const filtered = courses.filter((course) => {
+        const title = (course.title || "").toLowerCase();
+        const description = (course.description || "").toLowerCase();
+        const author = (course.author || "").toLowerCase();
+
+        const matchesText =
+            !searchTerm ||
+            title.includes(searchTerm) ||
+            description.includes(searchTerm) ||
+            author.includes(searchTerm);
+
+        const matchesCategory = selectedCategory === "all" || course.category === selectedCategory;
         return matchesText && matchesCategory;
     });
 
     renderCourses(filtered);
 }
 
-searchInput.addEventListener('input', filterCourses);
-categoryFilter.addEventListener('change', filterCourses);
+if (searchInput) searchInput.addEventListener("input", filterCourses);
+if (categoryFilter) categoryFilter.addEventListener("change", filterCourses);
 
 // Lógica del Modal para subir cursos
-const modal = document.getElementById('course-modal');
-const openModalBtn = document.getElementById('btn-open-modal');
-const closeModalBtn = document.getElementById('btn-close-modal');
-const newCourseForm = document.getElementById('new-course-form');
+if (openModalBtn && modal) {
+    openModalBtn.addEventListener("click", () => modal.classList.remove("hidden"));
+}
 
-openModalBtn.addEventListener('click', () => modal.classList.remove('hidden'));
-closeModalBtn.addEventListener('click', () => modal.classList.add('hidden'));
+if (closeModalBtn && modal) {
+    closeModalBtn.addEventListener("click", () => modal.classList.add("hidden"));
+}
 
-newCourseForm.addEventListener('submit', (e) => {
-    e.preventDefault();
+if (newCourseForm) {
+    newCourseForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-    const newCourse = {
-        id: Date.now(),
-        title: document.getElementById('course-title').value,
-        author: document.getElementById('course-author').value,
-        category: document.getElementById('course-category').value,
-        description: document.getElementById('course-desc').value
-    };
+        const title = document.getElementById("course-title")?.value.trim() || "";
+        const author = document.getElementById("course-author")?.value.trim() || "";
+        const category = document.getElementById("course-category")?.value.trim() || "";
+        const description = (
+            document.getElementById("course-desc")?.value ||
+            document.getElementById("course-description")?.value ||
+            ""
+        ).trim();
 
-    courses.unshift(newCourse);
-    localStorage.setItem('learnova_courses', JSON.stringify(courses));
-    
-    newCourseForm.reset();
-    modal.classList.add('hidden');
-    filterCourses();
-});
+        if (!title || !author || !category) return;
+
+        const payload = { title, author, category, description };
+
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.error || "No se pudo guardar el curso en la base de datos");
+            }
+
+            newCourseForm.reset();
+            if (modal) modal.classList.add("hidden");
+            await fetchCourses();
+            alert("¡Curso publicado correctamente!");
+        } catch (error) {
+            // Respaldo local si se prueba sin backend activo
+            const fallbackCourse = { id: Date.now(), ...payload };
+            courses.unshift(fallbackCourse);
+            localStorage.setItem("learnova_courses", JSON.stringify(courses));
+
+            newCourseForm.reset();
+            if (modal) modal.classList.add("hidden");
+            filterCourses();
+            alert(`Guardado localmente (${error.message})`);
+        }
+    });
+}
 
 // Inicializar vista
-renderCourses(courses);
-
-/*Actualizar catálogo------------------------------------------------------------------------------------------------------------*/
-
-const API_URL = "/.netlify/functions/courses";
-
-const coursesContainer = document.getElementById("courses-container");
-const searchInput = document.getElementById("search-input");
-const categoryFilter = document.getElementById("category-filter");
-const addCourseForm = document.getElementById("add-course-form");
-const courseModal = document.getElementById("course-modal");
-
-let allCourses = [];
-
-function escapeHtml(text = "") {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-async function fetchCourses() {
-  if (!coursesContainer) return;
-  coursesContainer.innerHTML = `<p style="text-align:center; color:#64748B;">Cargando cursos...</p>`;
-
-  try {
-    const response = await fetch(API_URL);
-    if (!response.ok) throw new Error("No se pudo obtener la lista de cursos");
-    allCourses = await response.json();
-    localStorage.setItem("learnova_courses", JSON.stringify(allCourses));
-    renderCourses();
-  } catch (error) {
-    console.warn("Usando respaldo local:", error);
-    allCourses = JSON.parse(localStorage.getItem("learnova_courses")) || [];
-    renderCourses();
-  }
-}
-
-function renderCourses() {
-  if (!coursesContainer) return;
-
-  const query = (searchInput?.value || "").toLowerCase().trim();
-  const selectedCategory = categoryFilter?.value || "all";
-
-  const filtered = allCourses.filter((course) => {
-    const matchesCategory = selectedCategory === "all" || course.category === selectedCategory;
-    const matchesSearch =
-      !query ||
-      (course.title || "").toLowerCase().includes(query) ||
-      (course.author || "").toLowerCase().includes(query) ||
-      (course.description || "").toLowerCase().includes(query);
-    return matchesCategory && matchesSearch;
-  });
-
-  coursesContainer.innerHTML = "";
-
-  if (filtered.length === 0) {
-    coursesContainer.innerHTML = `<p style="text-align:center; color:#64748B; grid-column: 1 / -1;">No se encontraron cursos con esos criterios.</p>`;
-    return;
-  }
-
-  filtered.forEach((course) => {
-    const card = document.createElement("div");
-    card.className = "course-card";
-    card.innerHTML = `
-      <span class="badge">${escapeHtml(course.category)}</span>
-      <h3>${escapeHtml(course.title)}</h3>
-      ${course.description ? `<p>${escapeHtml(course.description)}</p>` : ""}
-      <small>Por: <strong>${escapeHtml(course.author)}</strong></small>
-    `;
-    coursesContainer.appendChild(card);
-  });
-}
-
-if (searchInput) searchInput.addEventListener("input", renderCourses);
-if (categoryFilter) categoryFilter.addEventListener("change", renderCourses);
-
-if (addCourseForm) {
-  addCourseForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const title = document.getElementById("course-title")?.value.trim();
-    const author = document.getElementById("course-author")?.value.trim();
-    const category = document.getElementById("course-category")?.value.trim();
-    const description = document.getElementById("course-description")?.value.trim() || "";
-
-    if (!title || !author || !category) return;
-
-    try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, author, category, description })
-      });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error || "Error al guardar el curso");
-      }
-
-      addCourseForm.reset();
-      if (courseModal) courseModal.classList.add("hidden");
-      await fetchCourses();
-      alert("¡Curso publicado correctamente en la plataforma!");
-    } catch (error) {
-      alert(`No se pudo publicar el curso: ${error.message}`);
-    }
-  });
-}
-
 fetchCourses();
