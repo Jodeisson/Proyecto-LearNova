@@ -1,0 +1,8 @@
+{
+  "name": "learnova",
+  "version": "1.0.0",
+  "description": "Plataforma educativa LearNova",
+  "dependencies": {
+    "mongodb": "^6.9.0"
+  }
+}
