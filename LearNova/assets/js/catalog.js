@@ -66,8 +66,7 @@ async function fetchCourses() {
   try {
     const response = await fetch(API_URL);
     if (!response.ok) throw new Error("No se pudo obtener la lista de cursos");
-    const dbCourses = await response.json();
-    allCourses = dbCourses.length > 0 ? dbCourses : defaultCourses;
+    allCourses = await response.json();
     localStorage.setItem("learnova_courses", JSON.stringify(allCourses));
     renderCourses();
   } catch (error) {
