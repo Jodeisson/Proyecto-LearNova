@@ -159,19 +159,4 @@ if (newCourseForm) {
   });
 }
 
-async function fetchCourses() {
-  if (!coursesGrid) return;
-  coursesGrid.innerHTML = `<p style="text-align:center; color:#64748B; grid-column: 1 / -1;">Cargando cursos...</p>`;
-
-  try {
-    const response = await fetch(API_URL);
-    if (!response.ok) throw new Error("No se pudo obtener la lista de cursos");
-    allCourses = await response.json();
-    localStorage.setItem("learnova_courses", JSON.stringify(allCourses));
-    renderCourses();
-  } catch (error) {
-    console.warn("Usando respaldo local:", error);
-    allCourses = JSON.parse(localStorage.getItem("learnova_courses")) || defaultCourses;
-    renderCourses();
-  }
-}
+fetchCourses();
