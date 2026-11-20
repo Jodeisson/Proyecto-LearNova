@@ -827,3 +827,7 @@ nav a.active-link {
   border-radius: 999px;
   margin-left: 0.4rem;
 }
+
+#beneficios-section + #ia-section {
+  padding-top: 1.5rem;
+}
