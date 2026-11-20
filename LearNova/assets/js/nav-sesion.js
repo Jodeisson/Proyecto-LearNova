@@ -46,11 +46,11 @@
       e.preventDefault();
       if (confirm(`¿Cerrar la sesión de ${user.name || user.email}?`)) {
         localStorage.removeItem(SESSION_KEY);
-        window.location.href = "login.html";
+        window.location.href = "sesion.html";
       }
     });
   } else {
     navLink.textContent = "Ingresar";
-    navLink.href = "login.html";
+    navLink.href = "sesion.html";
   }
 })();
