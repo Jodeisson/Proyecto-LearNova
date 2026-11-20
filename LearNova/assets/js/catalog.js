@@ -1,6 +1,6 @@
 const API_URL = "/.netlify/functions/courses";
 const SESSION_KEY = "learnova_user";
-const PRICE_PER_HOUR = 10000; // Puedes ajustar este valor según tu moneda
+const PRICE_PER_HOUR = 10000;
 
 const defaultCourses = [
   {
@@ -42,7 +42,6 @@ const openModalBtn = document.getElementById("btn-open-modal");
 const closeModalBtn = document.getElementById("btn-close-modal");
 const newCourseForm = document.getElementById("new-course-form");
 
-// Elementos de compra de tiempo y sala de curso
 const buyTimeModal = document.getElementById("buy-time-modal");
 const closeBuyModalBtn = document.getElementById("btn-close-buy-modal");
 const buyTimeForm = document.getElementById("buy-time-form");
@@ -73,6 +72,22 @@ function getLoggedUser() {
   } catch {
     return null;
   }
+}
+
+function isOwnCourse(course) {
+  const user = getLoggedUser();
+  if (!user || !course) return false;
+
+  const currentEmail = (user.email || "").trim().toLowerCase();
+  const courseEmail = (course.authorEmail || "").trim().toLowerCase();
+
+  if (courseEmail && currentEmail) {
+    return courseEmail === currentEmail;
+  }
+
+  const currentName = (user.name || "").trim().toLowerCase();
+  const courseAuthor = (course.author || "").trim().toLowerCase();
+  return Boolean(currentName && courseAuthor && currentName === courseAuthor);
 }
 
 function getWalletKey() {
@@ -118,7 +133,6 @@ function escapeHtml(text = "") {
     .replace(/'/g, "&#039;");
 }
 
-// Cálculo de precio con 25% de descuento si se compran MÁS de 5 horas
 function calculatePurchase(hours) {
   const validHours = Math.max(0, Number(hours) || 0);
   const subtotal = validHours * PRICE_PER_HOUR;
@@ -187,10 +201,14 @@ function exitActiveCourse(reasonMessage = "") {
 }
 
 function startCourseSession(course) {
-  const remaining = getRemainingSeconds();
-  if (remaining <= 0) {
-    openBuyTimeModal(course);
-    return;
+  const ownCourse = isOwnCourse(course);
+
+  if (!ownCourse) {
+    const remaining = getRemainingSeconds();
+    if (remaining <= 0) {
+      openBuyTimeModal(course);
+      return;
+    }
   }
 
   stopCourseTimer();
@@ -198,10 +216,21 @@ function startCourseSession(course) {
 
   if (playerCategory) playerCategory.textContent = course.category || "Curso";
   if (playerTitle) playerTitle.textContent = course.title || "Curso";
-  if (playerAuthor) playerAuthor.textContent = `Creador: ${course.author || "Comunidad"}`;
+  if (playerAuthor) {
+    playerAuthor.textContent = ownCourse
+      ? `Creador: ${course.author || "Tú"} (Tu curso · Sin consumo de tiempo)`
+      : `Creador: ${course.author || "Comunidad"}`;
+  }
   if (playerDescription) playerDescription.textContent = course.description || "";
 
   if (coursePlayerModal) coursePlayerModal.classList.add("active");
+
+  if (ownCourse) {
+    if (cornerTimer) cornerTimer.classList.remove("active");
+    return;
+  }
+
+  const remaining = getRemainingSeconds();
   if (cornerTimer) cornerTimer.classList.add("active");
   updateTimerDisplay(remaining);
 
@@ -347,8 +376,13 @@ function renderCourses() {
     enterBtn.addEventListener("click", () => {
       const user = getLoggedUser();
       if (!user) {
-        alert("Debes iniciar sesión para comprar tiempo y entrar a los cursos.");
+        alert("Debes iniciar sesión para entrar a los cursos.");
         window.location.href = "login.html";
+        return;
+      }
+
+      if (isOwnCourse(course)) {
+        startCourseSession(course);
         return;
       }
 
@@ -388,7 +422,13 @@ if (newCourseForm) {
       const response = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, author, category, description })
+        body: JSON.stringify({
+          title,
+          author,
+          authorEmail: user.email.toLowerCase(),
+          category,
+          description
+        })
       });
 
       if (!response.ok) {
