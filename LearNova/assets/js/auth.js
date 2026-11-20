@@ -22,7 +22,8 @@ let isRegisterMode = false;
 
 function getCurrentUser() {
   try {
-    return JSON.parse(localStorage.getItem(SESSION_KEY));
+    const user = JSON.parse(localStorage.getItem(SESSION_KEY));
+    return user && user.email ? user : null;
   } catch {
     return null;
   }
@@ -30,13 +31,13 @@ function getCurrentUser() {
 
 function renderSessionState() {
   const user = getCurrentUser();
-  if (user && user.email) {
-    authBox.classList.add("hidden");
-    loggedInBox.classList.remove("hidden");
+  if (user) {
+    authBox.style.display = "none";
+    loggedInBox.style.display = "block";
     activeUserInfo.innerHTML = `Ya iniciaste sesión como <strong>${user.name || user.email}</strong> (${user.email}).<br>Cierra sesión si deseas ingresar con otra cuenta.`;
   } else {
-    loggedInBox.classList.add("hidden");
-    authBox.classList.remove("hidden");
+    loggedInBox.style.display = "none";
+    authBox.style.display = "block";
   }
 }
 
@@ -44,7 +45,7 @@ function updateModeUI() {
   if (isRegisterMode) {
     authTitle.textContent = "Crear cuenta";
     authSubtitle.textContent = "Únete a LearNova y comparte tus conocimientos.";
-    nameGroup.classList.remove("hidden");
+    nameGroup.style.display = "block";
     nameInput.required = true;
     submitBtn.textContent = "Registrarse";
     toggleText.textContent = "¿Ya tienes cuenta?";
@@ -52,7 +53,7 @@ function updateModeUI() {
   } else {
     authTitle.textContent = "Iniciar sesión";
     authSubtitle.textContent = "Accede a tu cuenta para publicar y explorar cursos.";
-    nameGroup.classList.add("hidden");
+    nameGroup.style.display = "none";
     nameInput.required = false;
     submitBtn.textContent = "Entrar";
     toggleText.textContent = "¿No tienes cuenta?";
@@ -68,6 +69,7 @@ if (logoutBtn) {
     isRegisterMode = false;
     updateModeUI();
     renderSessionState();
+    window.location.reload();
   });
 }
 
@@ -82,7 +84,6 @@ if (authForm) {
   authForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // Doble protección: impedir iniciar sesión si ya hay una activa
     if (getCurrentUser()) {
       renderSessionState();
       return;
@@ -122,4 +123,5 @@ if (authForm) {
   });
 }
 
+updateModeUI();
 renderSessionState();

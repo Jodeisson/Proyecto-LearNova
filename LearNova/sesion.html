@@ -5,6 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión | LearNova</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        .auth-card {
+            max-width: 460px;
+            margin: 3rem auto;
+            background: #ffffff;
+            padding: 2rem;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        }
+        .auth-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 1.25rem;
+        }
+        .btn-logout {
+            background-color: #dc2626;
+            color: #ffffff;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-logout:hover {
+            background-color: #b91c1c;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -16,20 +45,20 @@
             <a href="index.html">Inicio</a>
             <a href="catalog.html">Cursos</a>
             <a href="contact.html">Contacto</a>
-            <a href="sesion.html" id="nav-auth-link">Ingresar</a>
+            <a href="login.html" id="nav-auth-link" class="active-link">Ingresar</a>
             <a href="admin/login.html" class="btn-admin">Admin</a>
         </nav>
     </header>
 
-    <main class="catalog-container" style="max-width: 460px; margin: 3rem auto;">
-        <div class="modal-content" style="position: static; transform: none; width: 100%;">
+    <main>
+        <div class="auth-card">
             <!-- Vista cuando YA inició sesión -->
-            <div id="logged-in-box" class="hidden" style="text-align: center;">
-                <h1 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Sesión activa</h1>
-                <p id="active-user-info" class="modal-subtitle" style="margin-bottom: 1.5rem;"></p>
-                <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+            <div id="logged-in-box" style="display: none; text-align: center;">
+                <h1 style="font-size: 1.6rem; margin-bottom: 0.5rem;">Sesión activa</h1>
+                <p id="active-user-info" class="modal-subtitle"></p>
+                <div class="auth-actions">
                     <a href="catalog.html" class="btn-primary">Ir al catálogo</a>
-                    <button type="button" id="logout-btn" class="btn-secondary" style="cursor: pointer;">Cerrar sesión</button>
+                    <button type="button" id="logout-btn" class="btn-logout">Cerrar sesión</button>
                 </div>
             </div>
 
@@ -39,7 +68,7 @@
                 <p id="auth-subtitle" class="modal-subtitle">Accede a tu cuenta para publicar y explorar cursos.</p>
 
                 <form id="auth-form">
-                    <div id="name-group" class="form-group hidden">
+                    <div id="name-group" class="form-group" style="display: none;">
                         <label for="auth-name">Nombre completo</label>
                         <input type="text" id="auth-name" placeholder="Ej. Laura Gómez">
                     </div>

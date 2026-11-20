@@ -2,6 +2,10 @@ html {
     scroll-behavior: smooth;
 }
 
+.hidden {
+  display: none !important;
+}
+
 /* Estilos generales */
 * {
     margin: 0px;
