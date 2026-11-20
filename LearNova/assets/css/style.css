@@ -740,3 +740,90 @@ nav a.active-link {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* Saldo de tiempo en cabecera ---------------------------------------------------------------------------------------------------------*/
+.time-balance-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: rgba(16, 185, 129, 0.14);
+  color: #047857;
+  cursor: pointer;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+/* Cuenta atrás fija en una esquina mientras estudia */
+.course-timer-corner {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 1200;
+  background: #0f172a;
+  color: #f8fafc;
+  border: 1px solid rgba(200, 245, 90, 0.45);
+  border-radius: 12px;
+  padding: 0.7rem 1rem;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.28);
+  display: none;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: monospace;
+}
+
+.course-timer-corner.active {
+  display: flex;
+}
+
+.course-timer-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #c8f55a;
+}
+
+/* Sala de estudio del curso */
+.course-player-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.72);
+  z-index: 1100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.course-player-overlay.active {
+  display: flex;
+}
+
+.course-player-card {
+  background: #ffffff;
+  color: #0f172a;
+  width: 100%;
+  max-width: 640px;
+  border-radius: 14px;
+  padding: 1.75rem;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+}
+
+.buy-time-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-top: 0.75rem;
+}
+
+.discount-tag {
+  display: inline-block;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  margin-left: 0.4rem;
+}

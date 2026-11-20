@@ -1,5 +1,6 @@
 const API_URL = "/.netlify/functions/courses";
 const SESSION_KEY = "learnova_user";
+const PRICE_PER_HOUR = 10000; // Puedes ajustar este valor según tu moneda
 
 const defaultCourses = [
   {
@@ -41,7 +42,29 @@ const openModalBtn = document.getElementById("btn-open-modal");
 const closeModalBtn = document.getElementById("btn-close-modal");
 const newCourseForm = document.getElementById("new-course-form");
 
+// Elementos de compra de tiempo y sala de curso
+const buyTimeModal = document.getElementById("buy-time-modal");
+const closeBuyModalBtn = document.getElementById("btn-close-buy-modal");
+const buyTimeForm = document.getElementById("buy-time-form");
+const hoursInput = document.getElementById("hours-input");
+const priceBreakdown = document.getElementById("price-breakdown");
+
+const coursePlayerModal = document.getElementById("course-player-modal");
+const playerCategory = document.getElementById("player-category");
+const playerTitle = document.getElementById("player-title");
+const playerAuthor = document.getElementById("player-author");
+const playerDescription = document.getElementById("player-description");
+const btnLeaveCourse = document.getElementById("btn-leave-course");
+const btnOpenBuyFromPlayer = document.getElementById("btn-open-buy-from-player");
+
+const cornerTimer = document.getElementById("corner-timer");
+const cornerTimerDisplay = document.getElementById("corner-timer-display");
+const btnExitCourseCorner = document.getElementById("btn-exit-course-corner");
+
 let allCourses = [];
+let pendingCourseToEnter = null;
+let activeCourse = null;
+let countdownInterval = null;
 
 function getLoggedUser() {
   try {
@@ -52,6 +75,40 @@ function getLoggedUser() {
   }
 }
 
+function getWalletKey() {
+  const user = getLoggedUser();
+  return user ? `learnova_seconds_${user.email.toLowerCase()}` : null;
+}
+
+function getRemainingSeconds() {
+  const key = getWalletKey();
+  if (!key) return 0;
+  const val = Number(localStorage.getItem(key) || "0");
+  return Number.isFinite(val) && val > 0 ? Math.floor(val) : 0;
+}
+
+function setRemainingSeconds(seconds) {
+  const key = getWalletKey();
+  if (!key) return;
+  const safeSec = Math.max(0, Math.floor(seconds));
+  localStorage.setItem(key, String(safeSec));
+  updateTimerDisplay(safeSec);
+}
+
+function formatSeconds(totalSeconds) {
+  const sec = Math.max(0, Math.floor(totalSeconds));
+  const hrs = Math.floor(sec / 3600);
+  const mins = Math.floor((sec % 3600) / 60);
+  const remSec = sec % 60;
+  return [hrs, mins, remSec].map((n) => String(n).padStart(2, "0")).join(":");
+}
+
+function updateTimerDisplay(seconds = getRemainingSeconds()) {
+  if (cornerTimerDisplay) {
+    cornerTimerDisplay.textContent = formatSeconds(seconds);
+  }
+}
+
 function escapeHtml(text = "") {
   return String(text)
     .replace(/&/g, "&amp;")
@@ -59,6 +116,148 @@ function escapeHtml(text = "") {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+// Cálculo de precio con 25% de descuento si se compran MÁS de 5 horas
+function calculatePurchase(hours) {
+  const validHours = Math.max(0, Number(hours) || 0);
+  const subtotal = validHours * PRICE_PER_HOUR;
+  const hasDiscount = validHours > 5;
+  const discountAmount = hasDiscount ? subtotal * 0.25 : 0;
+  const total = subtotal - discountAmount;
+  return { validHours, subtotal, hasDiscount, discountAmount, total };
+}
+
+function renderPriceBreakdown() {
+  if (!hoursInput || !priceBreakdown) return;
+  const { validHours, subtotal, hasDiscount, discountAmount, total } = calculatePurchase(hoursInput.value);
+
+  if (validHours <= 0) {
+    priceBreakdown.innerHTML = "Ingresa una cantidad válida de horas.";
+    return;
+  }
+
+  if (hasDiscount) {
+    priceBreakdown.innerHTML = `
+      <div>Subtotal (${validHours} h): <del>$${subtotal.toLocaleString("es-CO")}</del></div>
+      <div>Descuento (25% por superar 5 horas): <strong>-$${discountAmount.toLocaleString("es-CO")}</strong> <span class="discount-tag">25% OFF</span></div>
+      <div style="margin-top: 0.3rem; font-size: 1.05rem;">Total a pagar: <strong>$${total.toLocaleString("es-CO")}</strong></div>
+    `;
+  } else {
+    priceBreakdown.innerHTML = `
+      <div>Tiempo a recibir: <strong>${validHours} hora(s)</strong> (${formatSeconds(validHours * 3600)})</div>
+      <div style="margin-top: 0.3rem; font-size: 1.05rem;">Total a pagar: <strong>$${total.toLocaleString("es-CO")}</strong></div>
+      <div style="font-size: 0.78rem; color: #64748b; margin-top: 0.25rem;">Compra más de 5 horas para obtener 25% de descuento.</div>
+    `;
+  }
+}
+
+function openBuyTimeModal(course = null) {
+  const user = getLoggedUser();
+  if (!user) {
+    alert("Debes iniciar sesión para comprar tiempo y acceder a los cursos.");
+    window.location.href = "login.html";
+    return;
+  }
+  pendingCourseToEnter = course;
+  renderPriceBreakdown();
+  if (buyTimeModal) buyTimeModal.classList.remove("hidden");
+}
+
+function closeBuyTimeModal() {
+  if (buyTimeModal) buyTimeModal.classList.add("hidden");
+  pendingCourseToEnter = null;
+}
+
+function stopCourseTimer() {
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
+  }
+  if (cornerTimer) cornerTimer.classList.remove("active");
+}
+
+function exitActiveCourse(reasonMessage = "") {
+  stopCourseTimer();
+  activeCourse = null;
+  if (coursePlayerModal) coursePlayerModal.classList.remove("active");
+  if (reasonMessage) {
+    alert(reasonMessage);
+  }
+}
+
+function startCourseSession(course) {
+  const remaining = getRemainingSeconds();
+  if (remaining <= 0) {
+    openBuyTimeModal(course);
+    return;
+  }
+
+  stopCourseTimer();
+  activeCourse = course;
+
+  if (playerCategory) playerCategory.textContent = course.category || "Curso";
+  if (playerTitle) playerTitle.textContent = course.title || "Curso";
+  if (playerAuthor) playerAuthor.textContent = `Creador: ${course.author || "Comunidad"}`;
+  if (playerDescription) playerDescription.textContent = course.description || "";
+
+  if (coursePlayerModal) coursePlayerModal.classList.add("active");
+  if (cornerTimer) cornerTimer.classList.add("active");
+  updateTimerDisplay(remaining);
+
+  countdownInterval = setInterval(() => {
+    const currentSec = getRemainingSeconds();
+    if (currentSec <= 1) {
+      setRemainingSeconds(0);
+      exitActiveCourse("Tu tiempo se ha agotado. Se ha cerrado la sesión del curso automáticamente.");
+      return;
+    }
+    setRemainingSeconds(currentSec - 1);
+  }, 1000);
+}
+
+if (closeBuyModalBtn) closeBuyModalBtn.addEventListener("click", closeBuyTimeModal);
+if (hoursInput) hoursInput.addEventListener("input", renderPriceBreakdown);
+
+if (buyTimeForm) {
+  buyTimeForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const { validHours, total, hasDiscount } = calculatePurchase(hoursInput.value);
+    if (validHours <= 0) return;
+
+    const addedSeconds = Math.round(validHours * 3600);
+    const nextSeconds = getRemainingSeconds() + addedSeconds;
+    setRemainingSeconds(nextSeconds);
+
+    const courseToResume = pendingCourseToEnter || activeCourse;
+    closeBuyTimeModal();
+
+    alert(
+      `¡Compra exitosa! Agregaste ${validHours} h (${formatSeconds(addedSeconds)}) por $${total.toLocaleString("es-CO")}${hasDiscount ? " con 25% de descuento" : ""}.`
+    );
+
+    if (courseToResume) {
+      startCourseSession(courseToResume);
+    }
+  });
+}
+
+if (btnLeaveCourse) {
+  btnLeaveCourse.addEventListener("click", () => {
+    exitActiveCourse("Saliste del curso. Tu tiempo restante quedó pausado y guardado.");
+  });
+}
+
+if (btnExitCourseCorner) {
+  btnExitCourseCorner.addEventListener("click", () => {
+    exitActiveCourse("Saliste del curso. Tu tiempo restante quedó pausado y guardado.");
+  });
+}
+
+if (btnOpenBuyFromPlayer) {
+  btnOpenBuyFromPlayer.addEventListener("click", () => {
+    openBuyTimeModal(activeCourse);
+  });
 }
 
 if (openModalBtn && courseModal) {
@@ -123,12 +322,12 @@ function renderCourses() {
     return;
   }
 
-  filtered.forEach((course) => {
+  filtered.forEach((course, index) => {
     const safeTitle = escapeHtml(course.title);
     const safeAuthor = escapeHtml(course.author);
     const safeCategory = escapeHtml(course.category);
     const safeDescription = escapeHtml(course.description || "");
-    const safeJsTitle = JSON.stringify(course.title || "");
+    const courseId = course.id || `course-${index}`;
 
     const card = document.createElement("div");
     card.className = "course-card";
@@ -140,9 +339,26 @@ function renderCourses() {
       </div>
       <div class="course-footer">
         <span>Por: <strong>${safeAuthor}</strong></span>
-        <button class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border: none; cursor: pointer;" onclick='alert("Abriendo lecciones de: " + ${safeJsTitle})'>Entrar</button>
+        <button type="button" class="btn-primary btn-enter-course" data-course-id="${escapeHtml(courseId)}" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border: none; cursor: pointer;">Entrar</button>
       </div>
     `;
+
+    const enterBtn = card.querySelector(".btn-enter-course");
+    enterBtn.addEventListener("click", () => {
+      const user = getLoggedUser();
+      if (!user) {
+        alert("Debes iniciar sesión para comprar tiempo y entrar a los cursos.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      if (getRemainingSeconds() <= 0) {
+        openBuyTimeModal(course);
+      } else {
+        startCourseSession(course);
+      }
+    });
+
     coursesGrid.appendChild(card);
   });
 }
@@ -190,4 +406,5 @@ if (newCourseForm) {
   });
 }
 
+updateTimerDisplay();
 fetchCourses();
