@@ -686,3 +686,57 @@ nav a.active-link {
     color: #1E293B;
     font-size: 0.95rem;
 }
+
+/* Badge de usuario activo ----------------------------------------------------------------------------------------------------*/
+.user-badge {
+  display: none;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.06);
+  max-width: 250px;
+}
+
+.user-badge.is-visible {
+  display: inline-flex;
+}
+
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border-radius: 50%;
+  background-color: #c8f55a; /* verde lima tipo el de la imagen */
+  color: #111827;
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+}
+
+.user-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  overflow: hidden;
+  text-align: left;
+}
+
+.user-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-email {
+  font-size: 0.72rem;
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
