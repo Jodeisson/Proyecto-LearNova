@@ -16,43 +16,56 @@
             <a href="index.html">Inicio</a>
             <a href="catalog.html">Cursos</a>
             <a href="contact.html">Contacto</a>
-            <a href="sesion.html" class="active-link">Ingresar</a>
+            <a href="login.html" class="active-link">Ingresar</a>
             <a href="admin/login.html" class="btn-admin">Admin</a>
         </nav>
     </header>
 
     <main class="catalog-container" style="max-width: 460px; margin: 3rem auto;">
         <div class="modal-content" style="position: static; transform: none; width: 100%;">
-            <h1 id="auth-title" style="font-size: 1.6rem; margin-bottom: 0.4rem;">Iniciar sesión</h1>
-            <p id="auth-subtitle" class="modal-subtitle">Accede a tu cuenta para publicar y explorar cursos.</p>
-
-            <form id="auth-form">
-                <div id="name-group" class="form-group hidden">
-                    <label for="auth-name">Nombre completo</label>
-                    <input type="text" id="auth-name" placeholder="Ej. Laura Gómez">
+            <!-- Vista cuando YA inició sesión -->
+            <div id="logged-in-box" class="hidden" style="text-align: center;">
+                <h1 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Sesión activa</h1>
+                <p id="active-user-info" class="modal-subtitle" style="margin-bottom: 1.5rem;"></p>
+                <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+                    <a href="catalog.html" class="btn-primary">Ir al catálogo</a>
+                    <button type="button" id="logout-btn" class="btn-secondary" style="cursor: pointer;">Cerrar sesión</button>
                 </div>
+            </div>
 
-                <div class="form-group">
-                    <label for="auth-email">Correo electrónico</label>
-                    <input type="email" id="auth-email" required placeholder="tu@correo.com">
-                </div>
+            <!-- Vista cuando NO ha iniciado sesión -->
+            <div id="auth-box">
+                <h1 id="auth-title" style="font-size: 1.6rem; margin-bottom: 0.4rem;">Iniciar sesión</h1>
+                <p id="auth-subtitle" class="modal-subtitle">Accede a tu cuenta para publicar y explorar cursos.</p>
 
-                <div class="form-group">
-                    <label for="auth-password">Contraseña</label>
-                    <input type="password" id="auth-password" required minlength="6" placeholder="Mínimo 6 caracteres">
-                </div>
+                <form id="auth-form">
+                    <div id="name-group" class="form-group hidden">
+                        <label for="auth-name">Nombre completo</label>
+                        <input type="text" id="auth-name" placeholder="Ej. Laura Gómez">
+                    </div>
 
-                <button type="submit" id="auth-submit" class="btn-primary full-width">Entrar</button>
-            </form>
+                    <div class="form-group">
+                        <label for="auth-email">Correo electrónico</label>
+                        <input type="email" id="auth-email" required placeholder="tu@correo.com">
+                    </div>
 
-            <p id="auth-message" style="margin-top: 0.8rem; font-size: 0.9rem; text-align: center;"></p>
+                    <div class="form-group">
+                        <label for="auth-password">Contraseña</label>
+                        <input type="password" id="auth-password" required minlength="6" placeholder="Mínimo 6 caracteres">
+                    </div>
 
-            <p style="margin-top: 1.2rem; text-align: center; font-size: 0.9rem;">
-                <span id="toggle-text">¿No tienes cuenta?</span>
-                <button type="button" id="toggle-mode-btn" style="background: none; border: none; color: inherit; font-weight: 700; text-decoration: underline; cursor: pointer;">
-                    Crear cuenta
-                </button>
-            </p>
+                    <button type="submit" id="auth-submit" class="btn-primary full-width">Entrar</button>
+                </form>
+
+                <p id="auth-message" style="margin-top: 0.8rem; font-size: 0.9rem; text-align: center;"></p>
+
+                <p style="margin-top: 1.2rem; text-align: center; font-size: 0.9rem;">
+                    <span id="toggle-text">¿No tienes cuenta?</span>
+                    <button type="button" id="toggle-mode-btn" style="background: none; border: none; color: inherit; font-weight: 700; text-decoration: underline; cursor: pointer;">
+                        Crear cuenta
+                    </button>
+                </p>
+            </div>
         </div>
     </main>
 

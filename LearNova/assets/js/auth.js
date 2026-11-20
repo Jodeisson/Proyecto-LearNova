@@ -1,5 +1,11 @@
 const AUTH_URL = "/.netlify/functions/auth";
+const SESSION_KEY = "learnova_user";
 
+const loggedInBox = document.getElementById("logged-in-box");
+const activeUserInfo = document.getElementById("active-user-info");
+const logoutBtn = document.getElementById("logout-btn");
+
+const authBox = document.getElementById("auth-box");
 const authForm = document.getElementById("auth-form");
 const authTitle = document.getElementById("auth-title");
 const authSubtitle = document.getElementById("auth-subtitle");
@@ -13,6 +19,26 @@ const toggleText = document.getElementById("toggle-text");
 const authMessage = document.getElementById("auth-message");
 
 let isRegisterMode = false;
+
+function getCurrentUser() {
+  try {
+    return JSON.parse(localStorage.getItem(SESSION_KEY));
+  } catch {
+    return null;
+  }
+}
+
+function renderSessionState() {
+  const user = getCurrentUser();
+  if (user && user.email) {
+    authBox.classList.add("hidden");
+    loggedInBox.classList.remove("hidden");
+    activeUserInfo.innerHTML = `Ya iniciaste sesión como <strong>${user.name || user.email}</strong> (${user.email}).<br>Cierra sesión si deseas ingresar con otra cuenta.`;
+  } else {
+    loggedInBox.classList.add("hidden");
+    authBox.classList.remove("hidden");
+  }
+}
 
 function updateModeUI() {
   if (isRegisterMode) {
@@ -35,41 +61,65 @@ function updateModeUI() {
   authMessage.textContent = "";
 }
 
-toggleModeBtn.addEventListener("click", () => {
-  isRegisterMode = !isRegisterMode;
-  updateModeUI();
-});
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", () => {
+    localStorage.removeItem(SESSION_KEY);
+    authForm.reset();
+    isRegisterMode = false;
+    updateModeUI();
+    renderSessionState();
+  });
+}
 
-authForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  authMessage.textContent = "Procesando...";
-  submitBtn.disabled = true;
+if (toggleModeBtn) {
+  toggleModeBtn.addEventListener("click", () => {
+    isRegisterMode = !isRegisterMode;
+    updateModeUI();
+  });
+}
 
-  const payload = {
-    action: isRegisterMode ? "register" : "login",
-    name: nameInput.value.trim(),
-    email: emailInput.value.trim(),
-    password: passwordInput.value
-  };
+if (authForm) {
+  authForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  try {
-    const response = await fetch(AUTH_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || "No se pudo completar la operación.");
+    // Doble protección: impedir iniciar sesión si ya hay una activa
+    if (getCurrentUser()) {
+      renderSessionState();
+      return;
     }
 
-    localStorage.setItem("learnova_user", JSON.stringify(data.user));
-    window.location.href = "catalog.html";
-  } catch (error) {
-    authMessage.textContent = error.message;
-    authMessage.style.color = "#DC2626";
-  } finally {
-    submitBtn.disabled = false;
-  }
-});
+    authMessage.textContent = "Procesando...";
+    authMessage.style.color = "";
+    submitBtn.disabled = true;
+
+    const payload = {
+      action: isRegisterMode ? "register" : "login",
+      name: nameInput.value.trim(),
+      email: emailInput.value.trim(),
+      password: passwordInput.value
+    };
+
+    try {
+      const response = await fetch(AUTH_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "No se pudo completar la operación.");
+      }
+
+      localStorage.setItem(SESSION_KEY, JSON.stringify(data.user));
+      window.location.href = "catalog.html";
+    } catch (error) {
+      authMessage.textContent = error.message;
+      authMessage.style.color = "#DC2626";
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+}
+
+renderSessionState();

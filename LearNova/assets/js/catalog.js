@@ -1,4 +1,5 @@
 const API_URL = "/.netlify/functions/courses";
+const SESSION_KEY = "learnova_user";
 
 const defaultCourses = [
   {
@@ -42,6 +43,15 @@ const newCourseForm = document.getElementById("new-course-form");
 
 let allCourses = [];
 
+function getLoggedUser() {
+  try {
+    const user = JSON.parse(localStorage.getItem(SESSION_KEY));
+    return user && user.email ? user : null;
+  } catch {
+    return null;
+  }
+}
+
 function escapeHtml(text = "") {
   return String(text)
     .replace(/&/g, "&amp;")
@@ -52,7 +62,21 @@ function escapeHtml(text = "") {
 }
 
 if (openModalBtn && courseModal) {
-  openModalBtn.addEventListener("click", () => courseModal.classList.remove("hidden"));
+  openModalBtn.addEventListener("click", () => {
+    const user = getLoggedUser();
+    if (!user) {
+      alert("Debes iniciar sesión o crear una cuenta para publicar un curso.");
+      window.location.href = "login.html";
+      return;
+    }
+
+    const authorInput = document.getElementById("course-author");
+    if (authorInput && user.name && !authorInput.value) {
+      authorInput.value = user.name;
+    }
+
+    courseModal.classList.remove("hidden");
+  });
 }
 
 if (closeModalBtn && courseModal) {
@@ -129,6 +153,13 @@ if (categoryFilter) categoryFilter.addEventListener("change", renderCourses);
 if (newCourseForm) {
   newCourseForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    const user = getLoggedUser();
+    if (!user) {
+      alert("Debes iniciar sesión para publicar un curso.");
+      window.location.href = "login.html";
+      return;
+    }
 
     const title = document.getElementById("course-title")?.value.trim();
     const author = document.getElementById("course-author")?.value.trim();
